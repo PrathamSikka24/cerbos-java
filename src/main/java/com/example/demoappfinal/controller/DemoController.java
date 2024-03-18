@@ -8,33 +8,33 @@ import dev.cerbos.sdk.builders.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static dev.cerbos.sdk.builders.AttributeValue.stringValue;
-
 @RestController
 public class DemoController {
 
-    @GetMapping
-    public String hello()  {
+    @GetMapping("/checkLeaveRequest")
+    public String checkLeaveRequest() {
         try {
+            // Initialize the Cerbos client
             CerbosBlockingClient client = new CerbosClientBuilder("localhost:3593").withPlaintext().buildBlockingClient();
-            CheckResult result = client.check(
-                    Principal.newInstance("john", "employee")
-                            .withPolicyVersion("20210210")
-                            .withAttribute("department", stringValue("marketing"))
-                            .withAttribute("geography", stringValue("GB")),
-                    Resource.newInstance("leave_request", "xx125")
-                            .withPolicyVersion("20210210")
-                            .withAttribute("department", stringValue("marketing"))
-                            .withAttribute("geography", stringValue("GB"))
-                            .withAttribute("owner", stringValue("john")),
-                    "view:public", "approve");
 
-            if (result.isAllowed("approve")) { // returns true if `approve` action is allowed
-                return "Hello World!";
+            // Prepare a check for a hypothetical "approve" action on a "leave_request" resource
+            CheckResult result = client.check(
+                    Principal.newInstance("someUser", "employee"), // Example principal
+                    Resource.newInstance("leave_request", "12345"), // Example resource
+                    "approve"); // Example action
+
+            // Check if the action is allowed based on the policy
+            if (result.isAllowed("approve")) {
+                // Action is allowed
+                return "Action approved!";
+            } else {
+                // Action is not allowed (should not happen with the given policy)
+                return "Action not approved.";
             }
         } catch (Exception e) {
-            return e.toString();
+            // Handle any exceptions
+            e.printStackTrace();
+            return "Error processing request: " + e.getMessage();
         }
-        return "unauthorized";
     }
 }
