@@ -1,6 +1,5 @@
 package com.example.demoappfinal.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.cerbos.sdk.CerbosBlockingClient;
 import dev.cerbos.sdk.CerbosClientBuilder;
 import dev.cerbos.sdk.CheckResult;
@@ -12,8 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class DemoController {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @GetMapping("/checkLeaveRequest")
     public String checkLeaveRequest() {
         try {
@@ -22,16 +19,25 @@ public class DemoController {
 
             // Prepare a check for a hypothetical "approve" action on a "leave_request" resource
             CheckResult result = client.check(
-                    Principal.newInstance("someUser", "employee"),
-                    Resource.newInstance("leave_request", "12345"),
-                    "approve");
+                    Principal.newInstance("someUser", "employee"), // Example principal
+                    Resource.newInstance("leave_request", "12345"), // Example resource
+                    "approve"); // Example action
 
-            // Serialize the CheckResult to JSON and return
-            return objectMapper.writeValueAsString(result);
+            // Use System.out.println to output the result directly to the console
+            System.out.println(result.getRaw());
+
+            // Check if the action is allowed based on the policy
+            if (result.isAllowed("approve")) {
+                // Action is allowed
+                return "Action approved!";
+            } else {
+                // Action is not allowed (should not happen with the given policy)
+                return "Action not approved.";
+            }
         } catch (Exception e) {
-            // Handle any exceptions
+            // Handle any exceptions and output to console
             e.printStackTrace();
-            return "{\"error\":\"Error processing request: " + e.getMessage() + "\"}";
+            return "Error processing request: " + e.getMessage();
         }
     }
 }
